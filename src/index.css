@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0a0a0f;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2a2a3e;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(26, 26, 46, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .glass-hover:hover {
+    background: rgba(26, 26, 46, 0.8);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .node-blue {
+    @apply bg-accent-blue/10 border-accent-blue/30 text-accent-blue;
+  }
+
+  .node-emerald {
+    @apply bg-accent-emerald/10 border-accent-emerald/30 text-accent-emerald;
+  }
+
+  .node-purple {
+    @apply bg-accent-purple/10 border-accent-purple/30 text-accent-purple;
+  }
+
+  .node-amber {
+    @apply bg-accent-amber/10 border-accent-amber/30 text-accent-amber;
+  }
+
+  .node-rose {
+    @apply bg-accent-rose/10 border-accent-rose/30 text-accent-rose;
+  }
+}
