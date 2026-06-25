@@ -54,26 +54,6 @@ export default function HeroSection() {
         </motion.p>
 
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.45 }}
-          className="flex flex-wrap justify-center gap-3"
-        >
-          {[T.tickets[lang], T.rolesScrum[lang], T.cicd[lang]].map((label, i) => (
-            <button
-              key={label}
-              onClick={() => {
-                const ids = ['tickets', 'roles', 'pipeline']
-                document.getElementById(ids[i])?.scrollIntoView({ behavior: 'smooth' })
-              }}
-              className="px-5 py-2.5 rounded-xl text-sm font-medium glass glass-hover transition-all"
-            >
-              {label}
-            </button>
-          ))}
-        </motion.div>
-
-        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}

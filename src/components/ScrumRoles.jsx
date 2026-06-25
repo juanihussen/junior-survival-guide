@@ -428,7 +428,7 @@ export default function ScrumRoles() {
         </motion.div>
 
         {filteredGroups.map((group, gi) => (
-          <div key={group.label} className="mb-10">
+          <div key={gi} className="mb-10">
             <motion.h3
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
