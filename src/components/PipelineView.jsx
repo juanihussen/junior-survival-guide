@@ -11,13 +11,6 @@ const STAGES = [
   { id: 'deploy', label: { es: 'Despliegue', en: 'Deploy' }, icon: '🚀' },
 ]
 
-const ENVIRONMENTS = [
-  { id: 'local', label: { es: 'Local', en: 'Local' }, icon: '💻', desc: { es: 'Entorno del desarrollador', en: 'Developer environment' }, color: 'text-gray-400' },
-  { id: 'dev', label: { es: 'Dev', en: 'Dev' }, icon: '🧪', desc: { es: 'Integración continua', en: 'Continuous integration' }, color: 'text-accent-amber' },
-  { id: 'staging', label: { es: 'Staging', en: 'Staging' }, icon: '🔍', desc: { es: 'Pre-producción', en: 'Pre-production' }, color: 'text-accent-blue' },
-  { id: 'production', label: { es: 'Producción', en: 'Production' }, icon: '🌐', desc: { es: 'Usuarios reales', en: 'Real users' }, color: 'text-accent-emerald' },
-]
-
 const FAIL_SCENARIOS = [
   { stage: 'unit_tests', msg: { es: '❌ Tests fallaron: falta cobertura en el módulo de auth', en: '❌ Tests failed: missing coverage in auth module' }, step: 2 },
   { stage: 'integration', msg: { es: '❌ Tests de integración fallaron: endpoint /users retorna 500', en: '❌ Integration tests failed: endpoint /users returns 500' }, step: 3 },
@@ -37,7 +30,6 @@ const PASS_MESSAGES = [
 
 export default function PipelineView() {
   const { lang } = useLanguage()
-  const [activeEnv, setActiveEnv] = useState(1)
   const [running, setRunning] = useState(false)
   const [currentStep, setCurrentStep] = useState(-1)
   const [logs, setLogs] = useState([])
@@ -104,7 +96,7 @@ export default function PipelineView() {
           <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-accent-purple/10 text-accent-purple border border-accent-purple/20 mb-4">
             {{ es: 'Módulo 3', en: 'Module 3' }[lang]}
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-3">{{ es: 'Entornos y CI/CD', en: 'Environments & CI/CD' }[lang]}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-3">{{ es: 'CI/CD', en: 'CI/CD' }[lang]}</h2>
           <p className="text-gray-400">{{ es: 'Pipeline de integración y despliegue automatizado', en: 'Automated integration and deployment pipeline' }[lang]}</p>
         </motion.div>
 
@@ -224,43 +216,6 @@ export default function PipelineView() {
               </div>
             </div>
           )}
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="glass rounded-2xl p-6 md:p-8"
-        >
-          <h3 className="text-sm font-semibold mb-4">{{ es: 'Entornos', en: 'Environments' }[lang]}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            {ENVIRONMENTS.map((env, i) => {
-              const isActive = activeEnv === i
-              return (
-                <button
-                  key={env.id}
-                  onClick={() => setActiveEnv(i)}
-                  className={`p-4 rounded-xl text-left transition-all ${
-                    isActive
-                      ? 'bg-accent-purple/10 border border-accent-purple/30'
-                      : 'bg-white/5 border border-white/5 hover:bg-white/10'
-                  }`}
-                >
-                  <div className="text-xl mb-2">{env.icon}</div>
-                  <h4 className={`text-sm font-semibold ${env.color}`}>{env.label[lang]}</h4>
-                  <p className="text-xs text-gray-500 mt-1">{env.desc[lang]}</p>
-                  {isActive && (
-                    <div className="mt-2 pt-2 border-t border-accent-purple/20 text-xs text-gray-400">
-                      {env.id === 'local' && ({ es: 'Código fuente, Docker Compose, variables de entorno locales.', en: 'Source code, Docker Compose, local environment variables.' })[lang]}
-                      {env.id === 'dev' && ({ es: 'Servidor compartido, CI corre automáticamente, tests rápidos.', en: 'Shared server, CI runs automatically, fast tests.' })[lang]}
-                      {env.id === 'staging' && ({ es: 'Réplica de producción, QA testing, últimos cambios antes de prod.', en: 'Production replica, QA testing, latest changes before prod.' })[lang]}
-                      {env.id === 'production' && ({ es: 'Usuarios reales, monitoreo, alertas, alta disponibilidad.', en: 'Real users, monitoring, alerts, high availability.' })[lang]}
-                    </div>
-                  )}
-                </button>
-              )
-            })}
-          </div>
         </motion.div>
       </div>
     </section>

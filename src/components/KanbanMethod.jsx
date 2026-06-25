@@ -1,138 +1,16 @@
-import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useLanguage } from '../context/LanguageContext'
 
-const PRACTICES = [
-  {
-    id: 'visualize',
-    icon: '👁️',
-    title: { es: 'Visualizar el Flujo', en: 'Visualize the Flow' },
-    desc: {
-      es: 'Mapeá todo el workflow del equipo en un tablero físico o digital. Cada columna representa un estado del trabajo. El objetivo es que cualquier persona pueda ver el estado del proyecto de un vistazo.',
-      en: 'Map the entire team workflow on a physical or digital board. Each column represents a state of work. The goal is for anyone to see the project status at a glance.',
-    },
-    ejemplo: {
-      es: 'Columnas típicas: To Do → In Progress → Review → Done. Cada ticket se mueve de izquierda a derecha.',
-      en: 'Typical columns: To Do → In Progress → Review → Done. Each ticket moves left to right.',
-    },
-    consejo: {
-      es: 'Empezá con pocas columnas y agregá más cuando el equipo las necesite. El tablero debe reflejar la realidad, no al revés.',
-      en: 'Start with few columns and add more when the team needs them. The board should reflect reality, not the other way around.',
-    },
-  },
-  {
-    id: 'wip',
-    icon: '🚦',
-    title: { es: 'Limitar el WIP', en: 'Limit WIP' },
-    desc: {
-      es: 'Establecé un límite máximo de tickets que pueden estar en cada columna simultáneamente. Esto evita la multitarea, reduce el tiempo de ciclo y expone los cuellos de botella.',
-      en: 'Set a maximum limit of tickets that can be in each column simultaneously. This prevents multitasking, reduces cycle time, and exposes bottlenecks.',
-    },
-    ejemplo: {
-      es: 'Si el límite de "In Progress" es 3, el equipo no puede empezar un 4to ticket hasta que uno se mueva a Review. Esto fuerza terminar lo empezado.',
-      en: 'If the "In Progress" limit is 3, the team cannot start a 4th ticket until one moves to Review. This forces finishing what was started.',
-    },
-    consejo: {
-      es: 'WIP bajos (2-3 por persona) suelen ser más efectivos. Parece contraintuitivo, pero producir menos en paralelo = entregar más rápido.',
-      en: 'Low WIP (2-3 per person) is usually more effective. It seems counterintuitive, but producing less in parallel = delivering faster.',
-    },
-  },
-  {
-    id: 'flow',
-    icon: '🌊',
-    title: { es: 'Gestionar el Flujo', en: 'Manage Flow' },
-    desc: {
-      es: 'Monitoreá métricas como el tiempo de ciclo (cycle time) y el throughput para identificar patrones. El objetivo es hacer que los tickets fluyan de manera predecible y constante.',
-      en: 'Monitor metrics like cycle time and throughput to identify patterns. The goal is to make tickets flow predictably and steadily.',
-    },
-    ejemplo: {
-      es: 'Usá un diagrama CFD (Cumulative Flow Diagram) para ver cuánto tiempo pasa un ticket en cada etapa. Si "In Review" se acumula, hay un cuello de botella en revisión.',
-      en: 'Use a CFD (Cumulative Flow Diagram) to see how long a ticket spends in each stage. If "In Review" builds up, there is a bottleneck in review.',
-    },
-    consejo: {
-      es: 'Medí el lead time (desde que se pide hasta que se entrega) y el cycle time (desde que se empieza hasta que se termina). La diferencia es el tiempo en backlog.',
-      en: 'Measure lead time (from request to delivery) and cycle time (from start to finish). The difference is the time spent in the backlog.',
-    },
-  },
-  {
-    id: 'policies',
-    icon: '📜',
-    title: { es: 'Hacer Políticas Explícitas', en: 'Make Policies Explicit' },
-    desc: {
-      es: 'Todo el equipo debe conocer y entender las reglas del proceso. Definí claramente cuándo un ticket pasa de una columna a otra, quién puede hacerlo, y qué criterios debe cumplir.',
-      en: 'The whole team must know and understand the process rules. Clearly define when a ticket moves from one column to another, who can do it, and what criteria it must meet.',
-    },
-    ejemplo: {
-      es: 'Ejemplo: "Un ticket pasa a Review solo si tiene código subido, tests pasando y descripción del MR completa." Nadie adivina.',
-      en: 'Example: "A ticket moves to Review only if it has code pushed, tests passing, and a complete MR description." Nobody guesses.',
-    },
-    consejo: {
-      es: 'Las políticas se escriben en el tablero o en un documento compartido. Se revisan y actualizan en las retrospectivas del equipo.',
-      en: 'Policies are written on the board or in a shared document. They are reviewed and updated during team retrospectives.',
-    },
-  },
-  {
-    id: 'feedback',
-    icon: '🔄',
-    title: { es: 'Implementar Feedback Loops', en: 'Implement Feedback Loops' },
-    desc: {
-      es: 'Establecé reuniones regulares para revisar el proceso y mejorar: daily standup (sincronización diaria), revisión de servicios (métricas y SLAs), y reuniones de replenishment (priorización).',
-      en: 'Set up regular meetings to review the process and improve: daily standup (daily sync), service delivery review (metrics and SLAs), and replenishment meetings (prioritization).',
-    },
-    ejemplo: {
-      es: 'La daily de Kanban se enfoca en el flujo del tablero: ¿hay bloqueos? ¿alguna columna está sobre el límite de WIP? ¿necesitamos ayuda?',
-      en: 'The Kanban daily focuses on board flow: are there blockers? Is any column over the WIP limit? Do we need help?',
-    },
-    consejo: {
-      es: 'Los feedback loops deben ser frecuentes y cortos. 15 minutos para la daily, 30 para la revisión de servicios. El tiempo es valioso.',
-      en: 'Feedback loops should be frequent and short. 15 minutes for daily, 30 for service delivery review. Time is valuable.',
-    },
-  },
-  {
-    id: 'kaizen',
-    icon: '📈',
-    title: { es: 'Mejorar Colaborativamente (Kaizen)', en: 'Improve Collaboratively (Kaizen)' },
-    desc: {
-      es: 'Kanban es un sistema evolutivo. El equipo experimenta con cambios pequeños, mide el impacto, y decide si los adopta. El objetivo es la mejora continua, no la perfección inmediata.',
-      en: 'Kanban is an evolutionary system. The team experiments with small changes, measures the impact, and decides whether to adopt them. The goal is continuous improvement, not immediate perfection.',
-    },
-    ejemplo: {
-      es: 'Si el equipo nota que los bugs se acumulan, puede experimentar con una columna de "Bug Fixing" con WIP 2, medir el impacto por 2 semanas, y decidir si mantenerla.',
-      en: 'If the team notices bugs piling up, they can experiment with a "Bug Fixing" column with WIP 2, measure the impact for 2 weeks, and decide whether to keep it.',
-    },
-    consejo: {
-      es: 'Usá retrospectivas para identificar un solo cambio pequeño por iteración. Implementalo, medilo, y decidí. Mejora sostenible > revolución.',
-      en: 'Use retrospectives to identify one small change per iteration. Implement it, measure it, and decide. Sustainable improvement > revolution.',
-    },
-  },
+const BOARD_COLUMNS = [
+  { id: 'todo', label: { es: 'To Do', en: 'To Do' }, icon: '📥', color: 'text-accent-amber', tickets: 4 },
+  { id: 'progress', label: { es: 'In Progress', en: 'In Progress' }, icon: '👨‍💻', color: 'text-accent-blue', tickets: 2, wip: 3 },
+  { id: 'review', label: { es: 'Code Review', en: 'Code Review' }, icon: '🔍', color: 'text-accent-purple', tickets: 1, wip: 2 },
+  { id: 'testing', label: { es: 'Testing', en: 'Testing' }, icon: '🧪', color: 'text-accent-rose', tickets: 1, wip: 2 },
+  { id: 'done', label: { es: 'Done', en: 'Done' }, icon: '✅', color: 'text-accent-emerald', tickets: 8 },
 ]
 
 export default function KanbanMethod() {
   const { lang } = useLanguage()
-  const [currentStep, setCurrentStep] = useState(0)
-  const [completed, setCompleted] = useState(false)
-
-  const practice = PRACTICES[currentStep]
-  const isFirst = currentStep === 0
-  const isLast = currentStep === PRACTICES.length - 1
-
-  const next = useCallback(() => {
-    if (isLast) {
-      setCompleted(true)
-      return
-    }
-    setCurrentStep(prev => prev + 1)
-  }, [isLast])
-
-  const prev = useCallback(() => {
-    if (isFirst) return
-    setCurrentStep(prev => prev - 1)
-  }, [isFirst])
-
-  const reset = useCallback(() => {
-    setCurrentStep(0)
-    setCompleted(false)
-  }, [])
 
   return (
     <section id="kanban" className="min-h-screen py-24 px-4 relative">
@@ -146,169 +24,148 @@ export default function KanbanMethod() {
           className="text-center mb-10"
         >
           <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-accent-rose/10 text-accent-rose border border-accent-rose/20 mb-4">
-            {{ es: 'Metodología', en: 'Methodology' }[lang]}
+            {{ es: 'Metodología de Flujo Continuo', en: 'Continuous Flow Methodology' }[lang]}
           </span>
           <h2 className="text-3xl md:text-4xl font-bold mb-2">{{ es: 'Kanban', en: 'Kanban' }[lang]}</h2>
-          <p className="text-text-secondary">{{ es: 'Metodología pull basada en flujo continuo y mejora incremental', en: 'Pull-based methodology based on continuous flow and incremental improvement' }[lang]}</p>
+          <p className="text-text-secondary">
+            {{ es: 'Visualización del trabajo, límites claros y mejora continua sin sprints fijos', en: 'Work visualization, clear limits, and continuous improvement without fixed sprints' }[lang]}
+          </p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="glass rounded-2xl p-6 md:p-8"
+          className="space-y-4"
         >
-          {!completed ? (
-            <>
-              <div className="flex items-center gap-2 mb-6">
-                {PRACTICES.map((p, i) => (
-                  <button
-                    key={p.id}
-                    onClick={() => setCurrentStep(i)}
-                    className={`h-1.5 rounded-full transition-all flex-1 ${
-                      i === currentStep
-                        ? 'bg-accent-rose'
-                        : i < currentStep
-                        ? 'bg-accent-rose/50'
-                        : 'bg-surface-card'
-                    }`}
-                  />
+          <div className="glass rounded-2xl p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-2xl">🎯</span>
+              <h3 className="text-lg font-bold">
+                {{ es: '¿Qué es en cristiano?', en: 'What is it in plain English?' }[lang]}
+              </h3>
+            </div>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              {lang === 'es' ? (
+                <>Kanban es como una lista de compras que nunca se vacía del todo. En vez de dividir el trabajo en sprints (como Scrum), tenés un flujo continuo de tareas que entran por un lado y salen por el otro. El objetivo es que el trabajo fluya sin atascos. Usás un <strong>tablero visual</strong> con columnas que representan el estado de cada tarea. Lo más importante: <strong>limitás cuántas tareas se pueden hacer al mismo tiempo</strong> (WIP) para no saturarte. Si algo se acumula, parás el flujo y resolvés el cuello de botella antes de seguir.</>
+              ) : (
+                <>Kanban is like a shopping list that never really empties. Instead of dividing work into sprints (like Scrum), you have a continuous flow of tasks that come in one side and go out the other. The goal is for work to flow without jams. You use a <strong>visual board</strong> with columns representing each task's status. Most importantly: <strong>you limit how many tasks can be done at once</strong> (WIP) to avoid overload. If something piles up, you stop the flow and resolve the bottleneck before continuing.</>
+              )}
+            </p>
+          </div>
+
+          <div className="glass rounded-2xl p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-2xl">📊</span>
+              <h3 className="text-lg font-bold">
+                {{ es: 'El Tablero', en: 'The Board' }[lang]}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-5 gap-2 mb-6">
+              {BOARD_COLUMNS.map(col => (
+                <div key={col.id} className={`bg-${col.color.replace('text-', '')}/10 rounded-xl p-2 border border-${col.color.replace('text-', '')}/20`}>
+                  <div className="text-center">
+                    <span className="text-lg block mb-1">{col.icon}</span>
+                    <span className={`text-[10px] font-semibold ${col.color} block leading-tight`}>{col.label[lang]}</span>
+                    {col.wip && (
+                      <span className="text-[10px] text-accent-rose font-mono block mt-1">
+                        WIP {col.wip}
+                      </span>
+                    )}
+                    <span className="text-xs text-text-secondary font-bold block mt-1">{col.tickets}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-text-primary">
+                {{ es: 'Cómo funciona:', en: 'How it works:' }[lang]}
+              </p>
+              <ul className="space-y-2">
+                {[
+                  { es: 'Cada tarea es un ticket que viaja de izquierda a derecha por el tablero.', en: 'Each task is a ticket that travels left to right across the board.' },
+                  { es: 'El equipo define cuántos tickets puede tener cada columna como máximo (límite WIP). Si una columna se llena, nadie puede mover más tickets hasta que se libere.', en: 'The team defines how many tickets each column can have at most (WIP limit). If a column fills up, no one can move more tickets until it frees up.' },
+                  { es: 'Los tickets en "Done" representan trabajo terminado y listo para producción.', en: 'Tickets in "Done" represent completed work ready for production.' },
+                  { es: 'No hay fechas fijas — los tickets se priorizan continuamente según la necesidad del negocio.', en: 'There are no fixed dates — tickets are continuously prioritized based on business needs.' },
+                ].map((item, i) => (
+                  <li key={i} className="text-sm text-text-secondary flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-rose mt-2 shrink-0" />
+                    {item[lang]}
+                  </li>
                 ))}
-              </div>
+              </ul>
+            </div>
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentStep}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                >
-                  <div className="flex items-center gap-3 mb-6">
-                    <span className="text-3xl">{practice.icon}</span>
-                    <div>
-                      <span className="text-xs font-mono text-accent-rose/70 mb-1 block">
-                        {currentStep + 1} / {PRACTICES.length}
-                      </span>
-                      <h3 className="text-xl font-bold">{practice.title[lang]}</h3>
-                    </div>
-                  </div>
-
-                  <p className="text-sm text-text-secondary leading-relaxed mb-4 bg-surface-card rounded-xl p-4">
-                    {practice.desc[lang]}
-                  </p>
-
-                  <div className="bg-accent-rose/5 rounded-xl p-4 border border-accent-rose/10 mb-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span>📌</span>
-                      <span className="text-xs font-semibold text-accent-rose">
-                        {{ es: 'Ejemplo', en: 'Example' }[lang]}
-                      </span>
-                    </div>
-                    <p className="text-sm text-text-secondary leading-relaxed">{practice.ejemplo[lang]}</p>
-                  </div>
-
-                  <div className="bg-surface-card rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span>💡</span>
-                      <span className="text-xs font-semibold text-text-muted">
-                        {{ es: 'Consejo', en: 'Tip' }[lang]}
-                      </span>
-                    </div>
-                    <p className="text-sm text-text-secondary leading-relaxed">{practice.consejo[lang]}</p>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-
-              <div className="flex items-center justify-between mt-8 pt-6 border-t border-surface-border">
-                <button
-                  onClick={prev}
-                  disabled={isFirst}
-                  className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
-                    isFirst
-                      ? 'text-text-disabled cursor-not-allowed'
-                      : 'bg-surface-card hover:bg-surface-hover text-text-secondary'
-                  }`}
-                >
-                  ← {{ es: 'Anterior', en: 'Previous' }[lang]}
-                </button>
-
-                <span className="text-xs text-text-muted">
-                  {practice.title[lang]}
+            <div className="bg-surface-card rounded-xl p-4 mt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span>🚦</span>
+                <span className="text-xs font-semibold text-text-muted">
+                  {{ es: 'WIP (Work In Progress)', en: 'WIP (Work In Progress)' }[lang]}
                 </span>
-
-                <button
-                  onClick={next}
-                  className="px-4 py-2 rounded-xl text-xs font-medium bg-accent-rose/20 text-accent-rose hover:bg-accent-rose/30 border border-accent-rose/30 transition-all"
-                >
-                  {isLast ? ({ es: 'Finalizar', en: 'Finish' }[lang]) : ({ es: 'Siguiente →', en: 'Next →' }[lang])}
-                </button>
               </div>
-            </>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-8"
-            >
-              <span className="text-5xl mb-4 block">🎉</span>
-              <h3 className="text-xl font-bold mb-2">{{ es: '¡Kanban completado!', en: 'Kanban completed!' }[lang]}</h3>
-              <p className="text-text-secondary text-sm mb-6 max-w-md mx-auto">
+              <p className="text-xs text-text-secondary leading-relaxed">
                 {lang === 'es' ? (
-                  <>Conocés las 6 prácticas fundamentales de Kanban. Recordá: es un sistema evolutivo — mejorá de a poco, medí todo, y adaptate continuamente.</>
+                  <>El WIP es el límite de tareas que pueden estar en una columna al mismo tiempo. Si "Code Review" tiene WIP 2, solo puede haber 2 tickets en revisión simultáneamente. Esto obliga al equipo a <strong>terminar lo que empezó</strong> antes de agarrar algo nuevo. Menos multitasking = más entregas.</>
                 ) : (
-                  <>You now know the 6 fundamental Kanban practices. Remember: it\'s an evolutionary system — improve little by little, measure everything, and adapt continuously.</>
+                  <>WIP is the limit of tasks that can be in a column at the same time. If "Code Review" has WIP 2, only 2 tickets can be in review simultaneously. This forces the team to <strong>finish what they started</strong> before picking up something new. Less multitasking = more deliveries.</>
                 )}
               </p>
-              <button
-                onClick={reset}
-                className="px-5 py-2.5 rounded-xl text-sm font-medium bg-accent-rose/20 text-accent-rose hover:bg-accent-rose/30 border border-accent-rose/30 transition-all"
-              >
-                🔄 {{ es: 'Volver a empezar', en: 'Start over' }[lang]}
-              </button>
-            </motion.div>
-          )}
-        </motion.div>
+            </div>
+          </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="mt-8 glass rounded-2xl p-6 md:p-8"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <span>📊</span>
-            <h3 className="text-sm font-semibold">{{ es: 'Tablero Kanban de ejemplo', en: 'Example Kanban Board' }[lang]}</h3>
+          <div className="glass rounded-2xl p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-2xl">⚡</span>
+              <h3 className="text-lg font-bold">
+                {{ es: 'Diferencia clave con Scrum', en: 'Key difference from Scrum' }[lang]}
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-surface-border">
+                    <th className="text-left py-2 pr-4 text-text-muted font-semibold">{{ es: 'Aspecto', en: 'Aspect' }[lang]}</th>
+                    <th className="text-left py-2 pr-4 text-accent-rose font-semibold">Kanban</th>
+                    <th className="text-left py-2 text-accent-purple font-semibold">Scrum</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-surface-border">
+                  {[
+                    { aspect: { es: 'Ciclos', en: 'Cycles' }, kanban: { es: 'Flujo continuo, sin sprints', en: 'Continuous flow, no sprints' }, scrum: { es: 'Sprints fijos (2-4 semanas)', en: 'Fixed sprints (2-4 weeks)' } },
+                    { aspect: { es: 'Roles', en: 'Roles' }, kanban: { es: 'No hay roles definidos', en: 'No defined roles' }, scrum: { es: 'PO, SM, Dev Team', en: 'PO, SM, Dev Team' } },
+                    { aspect: { es: 'Cambios', en: 'Changes' }, kanban: { es: 'Se pueden agregar en cualquier momento', en: 'Can be added at any time' }, scrum: { es: 'No se cambia el alcance del sprint', en: 'Sprint scope is fixed' } },
+                    { aspect: { es: 'Métrica clave', en: 'Key metric' }, kanban: { es: 'Cycle time y throughput', en: 'Cycle time and throughput' }, scrum: { es: 'Velocity por sprint', en: 'Velocity per sprint' } },
+                    { aspect: { es: 'Entrega', en: 'Delivery' }, kanban: { es: 'Continua, cuando está listo', en: 'Continuous, when ready' }, scrum: { es: 'Al final de cada sprint', en: 'At the end of each sprint' } },
+                  ].map(row => (
+                    <tr key={row.aspect.en}>
+                      <td className="py-2 pr-4 text-text-secondary font-medium">{row.aspect[lang]}</td>
+                      <td className="py-2 pr-4 text-text-secondary">{row.kanban[lang]}</td>
+                      <td className="py-2 text-text-secondary">{row.scrum[lang]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              { label: { es: 'Pendiente', en: 'Backlog' }, color: 'bg-gray-500/20', border: 'border-gray-500/30', tickets: ['Login OAuth', 'Dashboard'], icon: '📥' },
-              { label: { es: 'En Progreso', en: 'In Progress' }, color: 'bg-accent-blue/20', border: 'border-accent-blue/30', tickets: ['Exportar PDF'], icon: '👨‍💻', wip: '2/3' },
-              { label: { es: 'Revisión', en: 'Review' }, color: 'bg-accent-purple/20', border: 'border-accent-purple/30', tickets: [], icon: '🔍', wip: '0/2' },
-              { label: { es: 'Terminado', en: 'Done' }, color: 'bg-accent-emerald/20', border: 'border-accent-emerald/30', tickets: ['Fix login bug'], icon: '✅' },
-            ].map(col => (
-              <div key={col.label.en} className={`rounded-xl p-3 ${col.color} border ${col.border}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-text-secondary">{col.icon} {col.label[lang]}</span>
-                  {col.wip && <span className="text-[10px] font-mono text-accent-rose">{col.wip}</span>}
-                </div>
-                <div className="space-y-1">
-                  {col.tickets.length > 0 ? col.tickets.map(t => (
-                    <div key={t} className="text-[10px] bg-surface-card rounded-lg px-2 py-1 text-text-secondary">
-                      {t}
-                    </div>
-                  )) : (
-                    <div className="text-[10px] text-text-disabled italic">—</div>
+
+          <div className="bg-accent-rose/5 rounded-2xl p-6 md:p-8 border border-accent-rose/10">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl shrink-0">💡</span>
+              <div>
+                <h4 className="text-sm font-semibold text-accent-rose mb-2">
+                  {{ es: 'Pro-Tip de Entrevista', en: 'Interview Pro-Tip' }[lang]}
+                </h4>
+                <p className="text-sm text-text-secondary leading-relaxed">
+                  {lang === 'es' ? (
+                    <>Si te preguntan por Kanban, evitá decir solo "es un tablero con columnas". Decí: <strong className="text-white">"Kanban es un sistema de gestión de flujo que se enfoca en visualizar el trabajo, limitar el WIP y mejorar continuamente. A diferencia de Scrum, no tiene ciclos fijos — los cambios se pueden priorizar y entregar en cualquier momento. Es ideal para equipos de soporte, mantenimiento o productos con prioridades que cambian constantemente."</strong> Si mencionás que entendés la diferencia con Scrum, das la impresión de que trabajaste con ambos enfoques.</>
+                  ) : (
+                    <>If asked about Kanban, avoid just saying "it\'s a board with columns". Say: <strong className="text-white">"Kanban is a flow management system focused on visualizing work, limiting WIP, and continuous improvement. Unlike Scrum, it has no fixed cycles — changes can be prioritized and delivered at any time. It\'s ideal for support teams, maintenance, or products with constantly shifting priorities."</strong> If you mention you understand the difference from Scrum, you give the impression you\'ve worked with both approaches.</>
                   )}
-                </div>
+                </p>
               </div>
-            ))}
-          </div>
-          <div className="mt-3 text-xs text-text-muted text-center">
-            {lang === 'es' ? (
-              <>Límite WIP en <strong className="text-accent-rose">Review: 2</strong>. Si se llena, el equipo no puede mover más tickets hasta que se libere.</>
-            ) : (
-              <>WIP limit on <strong className="text-accent-rose">Review: 2</strong>. If it fills up, the team cannot move more tickets until it frees up.</>
-            )}
+            </div>
           </div>
         </motion.div>
       </div>
