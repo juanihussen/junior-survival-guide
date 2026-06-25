@@ -3,12 +3,12 @@ import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const STAGES = [
-  { id: 'checkout', label: { es: 'Checkout', en: 'Checkout' }, icon: '📦' },
-  { id: 'build', label: { es: 'Build', en: 'Build' }, icon: '🔨' },
-  { id: 'unit_tests', label: { es: 'Tests Unitarios', en: 'Unit Tests' }, icon: '🧪' },
-  { id: 'integration', label: { es: 'Tests de Integración', en: 'Integration Tests' }, icon: '🔗' },
-  { id: 'code_quality', label: { es: 'Calidad de Código', en: 'Code Quality' }, icon: '📊' },
-  { id: 'deploy', label: { es: 'Despliegue', en: 'Deploy' }, icon: '🚀' },
+  { id: 'checkout', label: { es: 'Checkout', en: 'Checkout' }, icon: '📦', desc: { es: 'Obtiene el código del repositorio y la rama correspondiente', en: 'Fetches code from the repository and the target branch' } },
+  { id: 'build', label: { es: 'Build', en: 'Build' }, icon: '🔨', desc: { es: 'Compila el código, resuelve dependencias y genera artefactos', en: 'Compiles code, resolves dependencies, and generates artifacts' } },
+  { id: 'unit_tests', label: { es: 'Tests Unitarios', en: 'Unit Tests' }, icon: '🧪', desc: { es: 'Ejecuta pruebas unitarias para validar funciones individuales', en: 'Runs unit tests to validate individual functions' } },
+  { id: 'integration', label: { es: 'Tests de Integración', en: 'Integration Tests' }, icon: '🔗', desc: { es: 'Verifica que los módulos funcionen correctamente entre sí', en: 'Verifies modules work correctly with each other' } },
+  { id: 'code_quality', label: { es: 'Calidad de Código', en: 'Code Quality' }, icon: '📊', desc: { es: 'Analiza estilo, duplicación, seguridad y mejores prácticas', en: 'Analyzes style, duplication, security, and best practices' } },
+  { id: 'deploy', label: { es: 'Despliegue', en: 'Deploy' }, icon: '🚀', desc: { es: 'Publica la nueva versión en el entorno correspondiente', en: 'Publishes the new version to the target environment' } },
 ]
 
 const FAIL_SCENARIOS = [
@@ -137,6 +137,7 @@ export default function PipelineView() {
               return (
                 <div key={stage.id} className="flex items-center gap-2">
                   <div
+                    title={stage.desc[lang]}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all border ${
                       isActive
                         ? 'bg-accent-purple/20 border-accent-purple/40 text-accent-purple animate-pulse'
