@@ -1,5 +1,5 @@
 import { useLanguage } from '../context/LanguageContext'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const STAGES = [
@@ -35,6 +35,7 @@ export default function PipelineView() {
   const [logs, setLogs] = useState([])
   const [finished, setFinished] = useState(false)
   const [failScenario, setFailScenario] = useState(null)
+  const [hoveredStage, setHoveredStage] = useState(null)
 
   const runPipeline = useCallback(() => {
     setRunning(true)
@@ -137,8 +138,9 @@ export default function PipelineView() {
               return (
                 <div key={stage.id} className="flex items-center gap-2">
                   <div
-                    title={stage.desc[lang]}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all border ${
+                    onMouseEnter={() => setHoveredStage(i)}
+                    onMouseLeave={() => setHoveredStage(null)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all border relative ${
                       isActive
                         ? 'bg-accent-purple/20 border-accent-purple/40 text-accent-purple animate-pulse'
                         : isFail
@@ -158,6 +160,20 @@ export default function PipelineView() {
               )
             })}
           </div>
+
+          <AnimatePresence>
+            {hoveredStage !== null && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="text-xs text-text-secondary bg-surface-card border border-surface-border rounded-lg px-3 py-2 mb-4"
+              >
+                <span className="font-medium text-accent-purple">{STAGES[hoveredStage].icon} {STAGES[hoveredStage].label[lang]}:</span>{' '}
+                {STAGES[hoveredStage].desc[lang]}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {running && (
             <div className="flex items-center gap-2 text-xs text-accent-purple mb-4">
